@@ -115,7 +115,7 @@ resetear.grid(pady=5, padx=5, row=2, column=2)
  
 # Create Canvas
 canvas = FigureCanvasTkAgg(fig, master=root)  
-#canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+canvas.get_tk_widget().grid(row=3, column=0, columnspan=4)
  
 # Plot data on Matplotlib Figure
 t = np.arange(0, 2*np.pi, .01)
