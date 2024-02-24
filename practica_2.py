@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import (
      FigureCanvasTkAgg)
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, Label
 import numpy as np
 
 #Variable global para almacenar las coordenadas
@@ -92,31 +92,30 @@ fig, ax = plt.subplots()
  
 # Tkinter Application
 frame = tk.Frame(root)
-frame.pack()
+#frame.pack()
 
-#Creaciones de texto
-peso_1 = tk.Text(root, height = 1, width = 15)
-peso_2 = tk.Text(root, height = 1, width = 15)
-bias = tk.Text(root, height = 1, width = 15)
-ms1 = "W1"
-ms2 = "W2"
-ms3 = "Bias"
-peso_1.pack()
-peso_1.insert(tk.END, ms1)
-peso_2.pack()
-peso_2.insert(tk.END, ms2)
-bias.pack()
-bias.insert(tk.END, ms3)
+#Creaciones de campos de texto
+Label(root, text="w1").grid(pady=5, row=0, column=0)
+peso_1 = tk.Text(root, height = 1, width = 15, state="disabled").grid(pady=5, row=0, column=1)
+Label(root, text="w2").grid(pady=5, row=1, column=0)
+peso_2 = tk.Text(root, height = 1, width = 15, state="disabled").grid(pady=5, row=1, column=1)
+Label(root, text="bias").grid(pady=5, row=2, column=0)
+bias = tk.Text(root, height = 1, width = 15, state="disabled").grid(pady=5, row=2, column=1)
+Label(root, text="Epocas").grid(pady=5, row=0, column=2)
+epocas = tk.Text(root, height = 1, width = 15).grid(pady=5, row=0, column=3)
+Label(root, text="Aprendizaje").grid(pady=5, row=1, column=2)
+var_apr = tk.Text(root, height = 1, width = 15).grid(pady=5, row=1, column=3)
+
 
 #Creación del boton
-graficar = tk.Button(root, height=2, width=15, text="Graficar", command=lambda:graficar_linea())
-graficar.pack()
-resetear = tk.Button(root, height=2, width=15, text="Reiniciar", command=lambda:limpiar())
-resetear.pack()
+entrenar = tk.Button(root, height=1, width=15, text="Entrenar", command=lambda:graficar_linea())
+entrenar.grid(pady=5, padx=5, row=2, column=3)
+resetear = tk.Button(root, height=1, width=15, text="Reiniciar", command=lambda:limpiar())
+resetear.grid(pady=5, padx=5, row=2, column=2)
  
 # Create Canvas
 canvas = FigureCanvasTkAgg(fig, master=root)  
-canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+#canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
  
 # Plot data on Matplotlib Figure
 t = np.arange(0, 2*np.pi, .01)
