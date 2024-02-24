@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import messagebox, Label
 import numpy as np
 import random
+import time
 
 #Variable global para almacenar las coordenadas
 Xs = []
@@ -24,9 +25,10 @@ def on_click(event):
         messagebox.showwarning("Fuera del plano", "Por favor haga click dentro del plano cartesiano")
 
 def graficar_linea():
-    texto1 = peso_1.get("1.0", "end-1c")
-    texto2 = peso_2.get("1.0", "end-1c")
-    texto3 = bias.get("1.0", "end-1c")
+    texto1 = peso_1.cget("text")
+    texto2 = peso_2.cget("text")
+    texto3 = bias.cget("text")
+
 
     if (is_float(texto1) and is_float(texto2) and is_float(texto3)):
         crear_grafica()
@@ -45,16 +47,26 @@ def graficar_linea():
     else:
         messagebox.showerror("Valor invalido", "Todos los valores deben ser numeros flotantes")
 
-def aprox_error(a=random.uniform(-1,1), b=random.uniform(-1,1), c=random.uniform(-1,1)):
-    n1 = round(a, 2)
-    n2 = round(b, 2)
-    n3 = round(c, 2)
+def ini_datos():
+    n1 = round(random.uniform(-1,1), 2)
+    n2 = round(random.uniform(-1,1), 2)
+    n3 = round(random.uniform(-1,1), 2)
+    peso_1.config(text=n1)
+    peso_2.config(text=n2)
+    bias.config(text=n3)
 
+    if Xs:
+        datos = Xs.copy()
+        random.shuffle(datos)
+        entr = datos[len(datos)//2:]
+        prueb = datos[:len(datos)//2]
+
+        for i in range(len(prueb)):
+            plt.plot(datos[i][1], datos[i][2], "ok")
     
-
-
-        
-
+    canvas.draw()
+    messagebox.showinfo("Datos cargados", "Se han preparado los valores para entrenar")
+    
 
 def prod_p(p1, p2, b):
     if Xs:
@@ -127,7 +139,7 @@ var_apr = tk.Text(root, height = 1, width = 15).grid(pady=5, row=1, column=3)
 
 
 #Creación del boton
-entrenar = tk.Button(root, height=1, width=15, text="Entrenar", command=lambda:aprox_error())
+entrenar = tk.Button(root, height=1, width=15, text="Entrenar", command=lambda:ini_datos())
 entrenar.grid(pady=5, padx=5, row=2, column=3)
 resetear = tk.Button(root, height=1, width=15, text="Reiniciar", command=lambda:limpiar())
 resetear.grid(pady=5, padx=5, row=2, column=2)
