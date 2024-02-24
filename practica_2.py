@@ -4,6 +4,7 @@ from matplotlib.backends.backend_tkagg import (
 import tkinter as tk
 from tkinter import messagebox, Label
 import numpy as np
+import random
 
 #Variable global para almacenar las coordenadas
 Xs = []
@@ -11,9 +12,14 @@ Xs = []
 def on_click(event):
     if event.inaxes is not None:
         #Agrega las coordenadas a la lista
-        Xs.append([1, event.xdata, event.ydata])
-        plt.plot(event.xdata, event.ydata, 'ok')
-        canvas.draw()
+        if event.button == 1:
+            Xs.append([1, event.xdata, event.ydata])
+            plt.plot(event.xdata, event.ydata, 'ob')
+            canvas.draw()
+        else:
+            Xs.append([1, event.xdata, event.ydata])
+            plt.plot(event.xdata, event.ydata, 'or')
+            canvas.draw()
     else:
         messagebox.showwarning("Fuera del plano", "Por favor haga click dentro del plano cartesiano")
 
@@ -38,6 +44,15 @@ def graficar_linea():
     
     else:
         messagebox.showerror("Valor invalido", "Todos los valores deben ser numeros flotantes")
+
+def aprox_error(a=random.uniform(-1,1), b=random.uniform(-1,1), c=random.uniform(-1,1)):
+    n1 = round(a, 2)
+    n2 = round(b, 2)
+    n3 = round(c, 2)
+
+    
+
+
         
 
 
@@ -66,16 +81,10 @@ def crear_grafica():
     plt.draw()
 
 def limpiar():
-    ms1 = "W1"
-    ms2 = "W2"
-    ms3 = "Bias"
     Xs.clear()
-    peso_1.delete("1.0", "end-1c")
-    peso_1.insert(tk.END, ms1)
-    peso_2.delete("1.0", "end-1c")
-    peso_2.insert(tk.END, ms2)
-    bias.delete("1.0", "end-1c")
-    bias.insert(tk.END, ms3)
+    peso_1.config(text="0")
+    peso_2.config(text="0")
+    bias.config(text="0")
     crear_grafica()
 
 def is_float(numero):
@@ -96,19 +105,29 @@ frame = tk.Frame(root)
 
 #Creaciones de campos de texto
 Label(root, text="w1").grid(pady=5, row=0, column=0)
-peso_1 = tk.Text(root, height = 1, width = 15, state="disabled").grid(pady=5, row=0, column=1)
+peso_1 = Label(root, text="0")
+peso_1.grid(pady=5, row=0, column=1)
+
+
 Label(root, text="w2").grid(pady=5, row=1, column=0)
-peso_2 = tk.Text(root, height = 1, width = 15, state="disabled").grid(pady=5, row=1, column=1)
+peso_2 = Label(root, text="0")
+peso_2.grid(pady=5, row=1, column=1)
+
+
 Label(root, text="bias").grid(pady=5, row=2, column=0)
-bias = tk.Text(root, height = 1, width = 15, state="disabled").grid(pady=5, row=2, column=1)
+bias = Label(root, text="0")
+bias.grid(pady=5, row=2, column=1)
+
+
 Label(root, text="Epocas").grid(pady=5, row=0, column=2)
 epocas = tk.Text(root, height = 1, width = 15).grid(pady=5, row=0, column=3)
+
 Label(root, text="Aprendizaje").grid(pady=5, row=1, column=2)
 var_apr = tk.Text(root, height = 1, width = 15).grid(pady=5, row=1, column=3)
 
 
 #Creación del boton
-entrenar = tk.Button(root, height=1, width=15, text="Entrenar", command=lambda:graficar_linea())
+entrenar = tk.Button(root, height=1, width=15, text="Entrenar", command=lambda:aprox_error())
 entrenar.grid(pady=5, padx=5, row=2, column=3)
 resetear = tk.Button(root, height=1, width=15, text="Reiniciar", command=lambda:limpiar())
 resetear.grid(pady=5, padx=5, row=2, column=2)
