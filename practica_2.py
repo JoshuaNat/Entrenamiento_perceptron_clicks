@@ -5,7 +5,9 @@ import tkinter as tk
 from tkinter import messagebox, Label
 import numpy as np
 import random
-import time
+import threading
+
+
 
 #Variable global para almacenar las coordenadas
 Xs = []
@@ -24,18 +26,17 @@ def on_click(event):
     else:
         messagebox.showwarning("Fuera del plano", "Por favor haga click dentro del plano cartesiano")
 
-def graficar_linea():
-    texto1 = peso_1.cget("text")
-    texto2 = peso_2.cget("text")
-    texto3 = bias.cget("text")
-
-
-    if (is_float(texto1) and is_float(texto2) and is_float(texto3)):
+def graficar_linea(n1, n2, n3, maximo):
+    max_epocas = int(maximo)
+    if max_epocas > 0:
+        peso_1.config(text=n1)
+        peso_2.config(text=n2)
+        bias.config(text=n3)
         crear_grafica()
 
-        w1 = float(texto1)
-        w2 = float(texto2)
-        b = float(texto3)
+        w1 = float(n1)
+        w2 = float(n2)
+        b = float(n3)
 
         m = -w1/w2
         c = -b/w2
@@ -43,9 +44,10 @@ def graficar_linea():
         plt.axline((0,c), slope=m, linewidth = 4)
         canvas.draw()
         prod_p(w1, w2, b)
+        threading.Thread(target=graficar_linea, args=(w1+0.3, w2+0.5, b-0.1, max_epocas-1)).start()
+
     
-    else:
-        messagebox.showerror("Valor invalido", "Todos los valores deben ser numeros flotantes")
+
 
 def ini_datos():
     n1 = round(random.uniform(-1,1), 2)
@@ -54,18 +56,24 @@ def ini_datos():
     peso_1.config(text=n1)
     peso_2.config(text=n2)
     bias.config(text=n3)
+    maximo = epocas.get("1.0", "end-1c")
+    parametro = var_apr.get("1.0", "end-1c")
+    if(is_int(maximo) and is_float(parametro)):
+        if Xs:
+            datos = Xs.copy()
+            random.shuffle(datos)
+            entr = datos[len(datos)//2:]
+            prueb = datos[:len(datos)//2]
 
-    if Xs:
-        datos = Xs.copy()
-        random.shuffle(datos)
-        entr = datos[len(datos)//2:]
-        prueb = datos[:len(datos)//2]
-
-        for i in range(len(prueb)):
-            plt.plot(datos[i][1], datos[i][2], "ok")
+            for i in range(len(prueb)):
+                plt.plot(prueb[i][1], prueb[i][2], "ok")
+        
+        canvas.draw()
+        messagebox.showinfo("prueba", "probando")
+        graficar_linea(n1, n2, n3, maximo)
+    else:
+        messagebox.showerror("Valores invalidos", "Las epocas deben ser enteros, el parametro de aprendizaje un flotante")
     
-    canvas.draw()
-    messagebox.showinfo("Datos cargados", "Se han preparado los valores para entrenar")
     
 
 def prod_p(p1, p2, b):
@@ -105,6 +113,13 @@ def is_float(numero):
         return(True)
     except:
         return False
+    
+def is_int(numero):
+    try:
+        int(numero)
+        return(True)
+    except:
+        return False
 
 
 # Initialize Tkinter and Matplotlib Figure
@@ -132,10 +147,12 @@ bias.grid(pady=5, row=2, column=1)
 
 
 Label(root, text="Epocas").grid(pady=5, row=0, column=2)
-epocas = tk.Text(root, height = 1, width = 15).grid(pady=5, row=0, column=3)
+epocas = tk.Text(root, height = 1, width = 15)
+epocas.grid(pady=5, row=0, column=3)
 
 Label(root, text="Aprendizaje").grid(pady=5, row=1, column=2)
-var_apr = tk.Text(root, height = 1, width = 15).grid(pady=5, row=1, column=3)
+var_apr = tk.Text(root, height = 1, width = 15)
+var_apr.grid(pady=5, row=1, column=3)
 
 
 #Creación del boton
