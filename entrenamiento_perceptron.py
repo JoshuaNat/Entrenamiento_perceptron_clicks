@@ -7,7 +7,7 @@ import random
 import threading
 
 #Lista de todas las coordenadas en el plano
-#Cada elemento tiene: Bias, coord x, coord y, Salida deseada
+#Cada elemento tiene: Bias, coord x, coord y
 Xs = []
 
 #Lista de todos los datos que se usaran para el entrenamiento
@@ -22,13 +22,15 @@ def on_click(event):
         coord_y = event.ydata #Coordenada Y del punto
         if event.button == 1: #Checa si fue con click izquierdo
             salida = 1 #Salida deseada
-            Xs.append([bias, coord_x, coord_y, salida]) #Se agrega a la lista de coordenadas
+            Xs.append([bias, coord_x, coord_y]) #Se agrega a la lista de coordenadas
+            training.append([[bias, coord_x, coord_y, salida]]) #Se agregan a los datos de entrenamiento
             plt.plot(coord_x, coord_y, "ob") #Se grafica el punto de color azul
             canvas.draw() #Se actualiza la figura
         else:
             #El click fue un click derecho
             salida = 0 #Salida deseada
-            Xs.append([bias, coord_x, coord_y, salida]) #Se agrega a la lista de coordenadas
+            Xs.append([bias, coord_x, coord_y]) #Se agrega a la lista de coordenadas
+            training.append([[bias, coord_x, coord_y, salida]]) #Se agregan a los datos de entrenamiento
             plt.plot(coord_x, coord_y, "or") #Se grafica el punto de color rojo
             canvas.draw() #Se actualiza la figura
     else:
@@ -60,13 +62,50 @@ def ini_datos():
             canvas.draw() #Actualizamos los nuevos puntos de color negro
             messagebox.showinfo("Datos cargados", "Datos de prueba seleccionados") #Usamos showinfo para pausar y que el usuario note que datos se modificaron
             #Llamamos a la funcion que va a entrenar nuestro perceptron, le damos los valores iniciales y el maximo de epocas
-            entrenar_perceptron(n1, n2, n3, maximo) 
+            entrenar_perceptron(n1, n2, n3, maximo, parametro) 
     else:
         #En caso de que un valor fuera invalido
         messagebox.showerror("Valor invalido", "Las epocas deben ser un entero, y el parametro de aprendizaje un flotante")
 
-def entrenar_perceptron(n1, n2, n3, maximo):
-    pass
+def entrenar_perceptron(n1, n2, n3, maximo, parametro, error = True):
+    if error == True:
+        peso_1.config(text=n1)
+        peso_2.config(text=n2)
+        bias.config(text=n3)
+        plt.clf()
+        crear_plano()
+
+        w1 = float(n1)
+        w2 = float(n2)
+        b = float(n3)
+
+        m = -w1/w2
+        c = -b/w2
+
+        plt.axline((0,c), slope=m, linewidth = 4)
+        canvas.draw()
+        max_epocas = int(maximo)
+        if max_epocas > 0:
+            for i in range(len(training)):
+                fallo = calc_error(n1, n2, n3, i)
+                e = training[i][0][-1] - fallo
+                print(e)
+
+
+def calc_error(p1, p2, b, indice):
+    W = np.array([b, p1, p2])
+    patron = training[indice]
+    X = np.array(patron[0][:-1])
+ 
+    y = np.dot(W, X.T) >= 0
+    if y == 0:
+        plt.plot(X[1], X[2], 'or')
+        canvas.draw()
+        return 0
+    else:
+        plt.plot(X[1], X[2], 'ob')
+        canvas.draw()
+        return 1
 
 def crear_plano():
     plt.title("Practica 2") #Titulo del plano
