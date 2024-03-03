@@ -68,42 +68,49 @@ def ini_datos():
         messagebox.showerror("Valor invalido", "Las epocas deben ser un entero, y el parametro de aprendizaje un flotante")
 
 def entrenar_perceptron(n1, n2, n3, maximo, parametro, error = True):
-    if error == True:
-        peso_1.config(text=n1)
+    if error == True: #Un requisito es que haya al menos un error en nuestros resultados
+        #Modificamos el valor de los label con los pesos
+        peso_1.config(text=n1) 
         peso_2.config(text=n2)
         bias.config(text=n3)
+        #Borramos la linea previa, hacerlo involucra borrar todo el plano
         plt.clf()
-        crear_plano()
+        crear_plano() #Volvemos a crear el plano
 
+        #Convertimos los strings de los labels a flotantes
         w1 = float(n1)
         w2 = float(n2)
         b = float(n3)
 
+        #Valores de una recta 
         m = -w1/w2
         c = -b/w2
 
+        #Graficamos nuestra recta
         plt.axline((0,c), slope=m, linewidth = 4)
         canvas.draw()
+
+        #Si aun nos es posible iterar
         max_epocas = int(maximo)
         if max_epocas > 0:
-            for i in range(len(training)):
-                fallo = calc_error(n1, n2, n3, i)
-                e = training[i][0][-1] - fallo
+            for i in range(len(training)): #Recorremos todos nuestros datos de entrenamiento
+                fallo = calc_error(n1, n2, n3, i) #Obtenemos la salida con nuestros datos actuales
+                e = training[i][0][-1] - fallo #Calculamos el error
                 print(e)
 
 
 def calc_error(p1, p2, b, indice):
-    W = np.array([b, p1, p2])
-    patron = training[indice]
-    X = np.array(patron[0][:-1])
+    W = np.array([b, p1, p2]) #Vector de pesos
+    patron = training[indice] #Nuestro primer grupo de coordenadas es una epoca
+    X = np.array(patron[0][:-1]) #Vector de entradas, eliminamos la salida deseada
  
-    y = np.dot(W, X.T) >= 0
-    if y == 0:
+    y = np.dot(W, X.T) >= 0 #Vemos el resultado del producto punto y checamos si es mayor a 0
+    if y == 0: #De ser menor a 0, grafimos un punto rojo y retornamos 0
         plt.plot(X[1], X[2], 'or')
         canvas.draw()
         return 0
-    else:
-        plt.plot(X[1], X[2], 'ob')
+    else: #De ser mayor a 0, graficamos un punto azul y retornamos 1
+        plt.plot(X[1], X[2], 'ob') 
         canvas.draw()
         return 1
 
