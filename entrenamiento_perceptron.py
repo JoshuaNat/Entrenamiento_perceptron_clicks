@@ -51,7 +51,6 @@ def ini_datos():
             random.shuffle(datos) #Cambiamos el orden de la lista a uno aleatorio
             testing = datos[:len(datos)//2] #La mitad de los datos se vuelven nuestros datos de prueba
             training = [elemento for elemento in Xs if elemento not in testing] #los datos de entrenamiento son las coordenadas que no se encuentren en la lista de prueba
-            print(f"datos: {training}")
             for i in range(len(testing)):  #Recorremos nuestros datos de prueba
                 plt.plot(testing[i][1], testing[i][2], "ok") #Encimamos un punto negro para simular que cambiamos su color
 
@@ -64,17 +63,39 @@ def ini_datos():
         messagebox.showerror("Valor invalido", "Las epocas deben ser un entero, y el parametro de aprendizaje un flotante")
 
 def entrenar_perceptron(n1, n2, n3, maximo, parametro, entrenamiento, error = True, ):
+    n1 = float(n1)
+    n2 = float(n2)
+    n3 = float(n3)
+    max_epocas = int(maximo)
+    if max_epocas == 0:
+        error = False
     if error == True:
         peso_1.config(text=n1) 
         peso_2.config(text=n2)
         bias.config(text=n3)
+        epocas.delete("1.0", "end-1c")
+        epocas.insert(tk.END, maximo)
         plt.clf() #Borramos la linea previa, hacerlo involucra borrar todo el plano
         crear_plano() #Volvemos a crear el plano
 
-        max_epocas = int(maximo)
+        
         if max_epocas > 0:
-            crear_linea(float(n1), float(n2), float(n3))
-            prod_punto(float(n1), float(n2), float(n3))
+            crear_linea(n1, n2, n3)
+            prod_punto(n1, n2, n3)
+            for i in range(len(entrenamiento)):
+                fallo = calc_error(n1, n2, n3, i, entrenamiento)
+                error = (entrenamiento[i][-1]) - fallo
+                parametro = float(parametro)
+                n1 = n1 + parametro * error * entrenamiento[i][1]
+                n2 = n2 + parametro * error * entrenamiento[i][2]
+                n3 = n3 + parametro * error * entrenamiento[i][0]
+
+        t1 = threading.Thread(target=entrenar_perceptron, args=(n1, n2, n3, max_epocas-1, parametro, entrenamiento))
+        t1.start()
+    max_epocas = max_epocas - 1            
+    crear_linea(n1, n2, n3)
+    prod_punto(n1, n2, n3)
+
 
 def crear_linea(n1, n2, n3):
     w1 = n1
@@ -103,10 +124,11 @@ def prod_punto(p1, p2, b):
     
     canvas.draw()
 
-def calc_error(p1, p2, b, indice):
+def calc_error(p1, p2, b, indice, training):
     W = np.array([b, p1, p2]) #Vector de pesos
     patron = training[indice] #Nuestro primer grupo de coordenadas es una epoca
-    X = np.array(patron[0][:-1]) #Vector de entradas, eliminamos la salida deseada
+    print(f"Patron de entrenamiento: {patron}")
+    X = np.array(patron[:-1]) #Vector de entradas, eliminamos la salida deseada
  
     y = np.dot(W, X.T) >= 0 #Vemos el resultado del producto punto y checamos si es mayor a 0
     if y == 0:
@@ -126,7 +148,6 @@ def crear_plano():
 def limpiar():
     plt.clf() #EBorra todos los elementos que se encuentran en el plano
     Xs.clear() #Elimina todos los elementos de la lista de coordenadas
-    training.clear() #Elimina todos los datos de entrenamiento
     #Regresa el valor de los Labels a 0 
     peso_1.config(text="0")
     peso_2.config(text="0")
