@@ -10,9 +10,6 @@ import threading
 #Cada elemento tiene: Bias, coord x, coord y
 Xs = []
 
-#Lista de todos los datos que se usaran para el entrenamiento
-#Cada elemento tiene: Bias, coord x, coord y, Salida deseada
-training = []
 
 def on_click(event):
     #Cuando se hace un click dentro del plano, agrega la coordenada a la lista
@@ -22,15 +19,13 @@ def on_click(event):
         coord_y = event.ydata #Coordenada Y del punto
         if event.button == 1: #Checa si fue con click izquierdo
             salida = 1 #Salida deseada
-            Xs.append([bias, coord_x, coord_y]) #Se agrega a la lista de coordenadas
-            training.append([[bias, coord_x, coord_y, salida]]) #Se agregan a los datos de entrenamiento
+            Xs.append([bias, coord_x, coord_y, salida]) #Se agrega a la lista de coordenadas
             plt.plot(coord_x, coord_y, "ob") #Se grafica el punto de color azul
             canvas.draw() #Se actualiza la figura
         else:
             #El click fue un click derecho
             salida = 0 #Salida deseada
-            Xs.append([bias, coord_x, coord_y]) #Se agrega a la lista de coordenadas
-            training.append([[bias, coord_x, coord_y, salida]]) #Se agregan a los datos de entrenamiento
+            Xs.append([bias, coord_x, coord_y, salida]) #Se agrega a la lista de coordenadas
             plt.plot(coord_x, coord_y, "or") #Se grafica el punto de color rojo
             canvas.draw() #Se actualiza la figura
     else:
@@ -56,48 +51,57 @@ def ini_datos():
             random.shuffle(datos) #Cambiamos el orden de la lista a uno aleatorio
             testing = datos[:len(datos)//2] #La mitad de los datos se vuelven nuestros datos de prueba
             training = [elemento for elemento in Xs if elemento not in testing] #los datos de entrenamiento son las coordenadas que no se encuentren en la lista de prueba
+            print(f"datos: {training}")
             for i in range(len(testing)):  #Recorremos nuestros datos de prueba
                 plt.plot(testing[i][1], testing[i][2], "ok") #Encimamos un punto negro para simular que cambiamos su color
 
             canvas.draw() #Actualizamos los nuevos puntos de color negro
             messagebox.showinfo("Datos cargados", "Datos de prueba seleccionados") #Usamos showinfo para pausar y que el usuario note que datos se modificaron
             #Llamamos a la funcion que va a entrenar nuestro perceptron, le damos los valores iniciales y el maximo de epocas
-            entrenar_perceptron(n1, n2, n3, maximo, parametro) 
+            entrenar_perceptron(n1, n2, n3, maximo, parametro, training) 
     else:
         #En caso de que un valor fuera invalido
         messagebox.showerror("Valor invalido", "Las epocas deben ser un entero, y el parametro de aprendizaje un flotante")
 
-def entrenar_perceptron(n1, n2, n3, maximo, parametro, error = True):
-    if error == True: #Un requisito es que haya al menos un error en nuestros resultados
-        #Modificamos el valor de los label con los pesos
+def entrenar_perceptron(n1, n2, n3, maximo, parametro, entrenamiento, error = True, ):
+    if error == True:
         peso_1.config(text=n1) 
         peso_2.config(text=n2)
         bias.config(text=n3)
-        #Borramos la linea previa, hacerlo involucra borrar todo el plano
-        plt.clf()
+        plt.clf() #Borramos la linea previa, hacerlo involucra borrar todo el plano
         crear_plano() #Volvemos a crear el plano
 
-        #Convertimos los strings de los labels a flotantes
-        w1 = float(n1)
-        w2 = float(n2)
-        b = float(n3)
-
-        #Valores de una recta 
-        m = -w1/w2
-        c = -b/w2
-
-        #Graficamos nuestra recta
-        plt.axline((0,c), slope=m, linewidth = 4)
-        canvas.draw()
-
-        #Si aun nos es posible iterar
         max_epocas = int(maximo)
         if max_epocas > 0:
-            for i in range(len(training)): #Recorremos todos nuestros datos de entrenamiento
-                fallo = calc_error(n1, n2, n3, i) #Obtenemos la salida con nuestros datos actuales
-                e = training[i][0][-1] - fallo #Calculamos el error
-                print(e)
+            crear_linea(float(n1), float(n2), float(n3))
+            prod_punto(float(n1), float(n2), float(n3))
 
+def crear_linea(n1, n2, n3):
+    w1 = n1
+    w2 = n2
+    b = n3
+    #Valores de una recta 
+    m = -w1/w2
+    c = -b/w2
+
+    #Graficamos nuestra recta
+    plt.axline((0,c), slope=m, linewidth = 4)
+    canvas.draw()
+
+def prod_punto(p1, p2, b):
+    if Xs:
+        prueba = [sublist[:-1] for sublist in Xs]
+        W = np.array([b, p1, p2])
+        X = np.array(prueba)
+        y = np.dot(W, X.T) >= 0
+        
+        for i in range(len(y)):
+            if (y[i] == 0):
+                plt.plot(X[i][1], X[i][2], 'or')
+            else:
+                plt.plot(X[i][1], X[i][2], 'ob')
+    
+    canvas.draw()
 
 def calc_error(p1, p2, b, indice):
     W = np.array([b, p1, p2]) #Vector de pesos
@@ -105,13 +109,9 @@ def calc_error(p1, p2, b, indice):
     X = np.array(patron[0][:-1]) #Vector de entradas, eliminamos la salida deseada
  
     y = np.dot(W, X.T) >= 0 #Vemos el resultado del producto punto y checamos si es mayor a 0
-    if y == 0: #De ser menor a 0, grafimos un punto rojo y retornamos 0
-        plt.plot(X[1], X[2], 'or')
-        canvas.draw()
+    if y == 0:
         return 0
     else: #De ser mayor a 0, graficamos un punto azul y retornamos 1
-        plt.plot(X[1], X[2], 'ob') 
-        canvas.draw()
         return 1
 
 def crear_plano():
