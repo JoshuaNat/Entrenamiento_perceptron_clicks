@@ -68,8 +68,11 @@ def entrenar_perceptron(n1, n2, n3, maximo, parametro, entrenamiento, error = Tr
     n3 = float(n3)
     max_epocas = int(maximo)
     if max_epocas == 0:
-        error = False
+        epocas.delete("1.0", "end-1c")
+        epocas.insert(tk.END, "0")
     if error == True:
+        errores = []
+        bandera = True
         peso_1.config(text=n1) 
         peso_2.config(text=n2)
         bias.config(text=n3)
@@ -85,12 +88,20 @@ def entrenar_perceptron(n1, n2, n3, maximo, parametro, entrenamiento, error = Tr
             for i in range(len(entrenamiento)):
                 fallo = calc_error(n1, n2, n3, i, entrenamiento)
                 error = (entrenamiento[i][-1]) - fallo
+                errores.append(error)
                 parametro = float(parametro)
                 n1 = n1 + parametro * error * entrenamiento[i][1]
                 n2 = n2 + parametro * error * entrenamiento[i][2]
                 n3 = n3 + parametro * error * entrenamiento[i][0]
+        
+        print(errores)
+        
+        if (1 in errores) or (-1 in errores):
+            bandera = True
+        else:
+            bandera = False
 
-        t1 = threading.Thread(target=entrenar_perceptron, args=(n1, n2, n3, max_epocas-1, parametro, entrenamiento))
+        t1 = threading.Thread(target=entrenar_perceptron, args=(n1, n2, n3, max_epocas-1, parametro, entrenamiento, bandera))
         t1.start()
     max_epocas = max_epocas - 1            
     crear_linea(n1, n2, n3)
@@ -127,7 +138,6 @@ def prod_punto(p1, p2, b):
 def calc_error(p1, p2, b, indice, training):
     W = np.array([b, p1, p2]) #Vector de pesos
     patron = training[indice] #Nuestro primer grupo de coordenadas es una epoca
-    print(f"Patron de entrenamiento: {patron}")
     X = np.array(patron[:-1]) #Vector de entradas, eliminamos la salida deseada
  
     y = np.dot(W, X.T) >= 0 #Vemos el resultado del producto punto y checamos si es mayor a 0
